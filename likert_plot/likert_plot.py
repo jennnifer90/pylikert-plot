@@ -88,34 +88,28 @@ def plot_likert_scales(data: DataFrame, align_category: str,
                     '{:.0f}%'.format(bar_perc),
                     ha='center', va='center', color =text_color)
         for ind, column_name in enumerate(data.columns):
-            if ind < mid_index:
+            if ind == mid_index:
+                continue
+            elif ind < mid_index:
                 x = -sum(row[x] for i, x in enumerate(data.columns) if
                          ind <= i < mid_index) + mid_point
                 neg_x.append(x)
-                rect = patches.Rectangle((x, y), row[column_name],
-                                         facecolor=color[ind], **bar_kws)
-                ax.add_patch(rect)
-                r, b, g = color[ind]
-                text_color = 'white' if r * g * b < 0.5 else 'darkgrey'
-                bar_perc = 100 * row[column_name] / row.sum()
-                if show_perc and bar_perc >= min_label_perc:
-                    ax.text(x + row[column_name] / 2, y_center,
-                            '{:.0f}%'.format(bar_perc),
-                            ha='center', va='center', color=text_color)
-            elif ind > mid_index:
+            else:
                 x = sum(row[x] for i, x in enumerate(data.columns) if
                         mid_index <= i < ind) + mid_point
                 pos_x.append(x + row[column_name])
-                rect = patches.Rectangle((x, y), row[column_name],
-                                         facecolor=color[ind], **bar_kws)
-                ax.add_patch(rect)
-                r, b, g = color[ind]
-                text_color = 'white' if r * g * b < 0.5 else 'darkgrey'
-                bar_perc = 100 * row[column_name] / row.sum()
-                if show_perc and bar_perc >= min_label_perc:
-                    ax.text(x + row[column_name] / 2, y_center,
-                            '{:.0f}%'.format(bar_perc),
-                            ha='center', va='center', color=text_color)
+
+            rect = patches.Rectangle((x, y), row[column_name],
+                                     facecolor=color[ind], **bar_kws)
+            ax.add_patch(rect)
+            r, b, g = color[ind]
+            text_color = 'white' if r * g * b < 0.5 else 'darkgrey'
+            bar_perc = 100 * row[column_name] / row.sum()
+            if show_perc and bar_perc >= min_label_perc:
+                ax.text(x + row[column_name] / 2, y_center,
+                        '{:.0f}%'.format(bar_perc),
+                        ha='center', va='center', color=text_color)
+
         y_position.append(y_center)
         y = y - bar_kws['height']-0.2
 
