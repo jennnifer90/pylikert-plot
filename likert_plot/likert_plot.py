@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple, Dict, Any
+from typing import Optional, Dict, Any
 
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
