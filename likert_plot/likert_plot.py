@@ -3,6 +3,7 @@ from typing import Optional, Dict, Any, Union, List
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 from matplotlib import patches
+from matplotlib.axes import Axes
 from matplotlib.colors import to_rgb
 from mpl_format.axes import AxesFormatter
 from mpl_format.axes.axis_utils import new_axes
@@ -21,8 +22,10 @@ def plot_likert_scales_temp(data: DataFrame, align_category: str,
                             line_at_zero: Optional[bool] = True,
                             show_perc: Optional[bool] = True,
                             min_label_perc: Optional[float] = 3.0,
+                            bar_pc_to_show: Optional[float] = 0.03,
                             title: Optional[str] = None,
-                            qname_mapping: Optional[Dict[str, str]] = None):
+                            qname_mapping: Optional[Dict[str, str]] = None,
+                            ax: Optional[Axes]=None):
     """
 
     :param data: DataFrame with counts of Likert choices as columns and
@@ -43,6 +46,8 @@ def plot_likert_scales_temp(data: DataFrame, align_category: str,
     :param min_label_perc: only show percentage text if it is greater or
     equal to the minimum percentage set here. For example, to set it to 1.5%,
     input as 1.5. Default is 3
+    :param bar_pc_to_show: only show percentage of text if length of each
+    bar is greater than maximum bar length * bar_pc_to_show
     :param title: option to set title for the plot
     :param qname_mapping: option to map the name of the question on
     the y axis. input as {'q1 old name':'q1 new name','q2 old name':'q2 new
@@ -53,7 +58,8 @@ def plot_likert_scales_temp(data: DataFrame, align_category: str,
     if order is not None:
         data = data[order]
 
-    elif color is None:
+    fc = None
+    if color is None:
         fc = color_palette(color_palette_name, n_colors=data.shape[1])
 
     if bar_kws is None:
@@ -76,7 +82,7 @@ def plot_likert_scales_temp(data: DataFrame, align_category: str,
     y_position = []
     y = len(data) * bar_kws['height'] + 0.5 - 0.5 * bar_kws['height'] + len(
         data)*0.2
-    ax = new_axes()
+    ax = ax or new_axes()
 
     for name, row in data.iterrows():
         align_index = data.columns.get_loc(align_category)
@@ -107,10 +113,12 @@ def plot_likert_scales_temp(data: DataFrame, align_category: str,
         y_center = y + 0.5 * bar_kws['height']
         text_color = 'white' if r * g * b < 0.25 else 'black'
         bar_perc = 100 * row[align_category]/row.sum()
-        if show_perc and bar_perc >= min_label_perc:
+        if show_perc and bar_perc >= min_label_perc and row[
+            align_category] > (data.max().max() * bar_pc_to_show):
             ax.text(mid_point+row[align_category]/2, y_center,
-                    '{:.0f}%'.format(bar_perc),
-                    ha='center', va='center', color =text_color)
+                '{:.0f}%'.format(bar_perc),
+                ha='center', va='center', color =text_color)
+        print()
         for ind, column_name in enumerate(data.columns):
             if ind == align_index:
                 if ind == 0:
@@ -144,7 +152,11 @@ def plot_likert_scales_temp(data: DataFrame, align_category: str,
             ax.add_patch(rect)
             text_color = 'white' if r * g * b < 0.25 else 'black'
             bar_perc = 100 * row[column_name] / row.sum()
-            if show_perc and bar_perc >= min_label_perc:
+            print(column_name, row[column_name],row[
+            column_name] > (data.max().max() * 0.01),bar_perc >= min_label_perc)
+
+            if show_perc and bar_perc >= min_label_perc and row[
+            column_name] > (data.max().max() * bar_pc_to_show):
                 ax.text(x + row[column_name] / 2, y_center,
                         '{:.0f}%'.format(bar_perc),
                         ha='center', va='center', color=text_color)
